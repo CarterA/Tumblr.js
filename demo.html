@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+ 		<title>Tumblr.js</title> 
+		<script src="tumblr-0.1.js"></script>
+		<script>
+		
+		var tumblelog = new Tumblr.tumblelog("demo", {
+			"autoload" : true,
+			"numberOfPosts" : 15
+		}, function(tumblelog) {
+			console.log(tumblelog);
+		});
+
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
