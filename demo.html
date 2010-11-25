@@ -10,7 +10,7 @@
 			"autoload" : true,
 			"numberOfPosts" : 15
 		}, function(tumblelog) {
-			console.log(tumblelog);
+			tumblelog.appendTo(document.getElementsByTagName("body")[0]);
 		});
 
 		</script>
