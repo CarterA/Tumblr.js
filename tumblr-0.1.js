@@ -36,9 +36,9 @@ var Tumblr = new function() {
         Returns: An initialized Tumblr.tumblelog object. If the autoload option
                  is not specified, then you must call the <load> function to
                  make retrieve the required information from the Tumblr API.
-            
+                 
+    */
     
-     */
     this.tumblelog = function(username, options, callback) {
         console.log("Tumblr.tumblelog init with username: " + username);
         this.username = username;
@@ -105,97 +105,188 @@ var Tumblr = new function() {
         // Iterate through the posts
         for (var post in this.posts) {
             
-            post = this.posts[post]; // No idea why this is necessary
+            post = Tumblr.post(this.posts[post]);
             
-            // Create the container for the post and its content
-            var postContainer = document.createElement("article");
-            postContainer.className = post.type;
-            var postContentContainer = document.createElement("section");
-            postContentContainer.className = "content";
-            postContainer.appendChild(postContentContainer);
-            
-            // Setup the title, if one is provided
-            if (post["regular-title"]) {
-                var postTitle = document.createElement("h1");
-                postTitle.className = "title";
-                postTitle.innerHTML = post["regular-title"];
+            if (post) {
+                container.appendChild(post.element());
             }
-            
-            // Add content based on the type of post
-            if (post.type === "regular") {
-                postContentContainer.innerHTML += post["regular-body"];
-            }
-            else if (post.type === "quote") {
-                var textContainer = document.createElement("blockquote");
-                textContainer.innerHTML += post["quote-text"];
-                postContentContainer.appendChild(textContainer);
-                var sourceContainer = document.createElement("p");
-                sourceContainer.className = "quote-source";
-                sourceContainer.innerHTML += post["quote-source"];
-                postContentContainer.appendChild(sourceContainer);
-            }
-            else if (post.type === "conversation") {
-                for (var line in post["conversation"]) {
-                    line = (post["conversation"])[line];
-                    var lineContainer = document.createElement("p");
-                    lineContainer.className = "conversation-line";
-                    var labelContainer = document.createElement("span");
-                    labelContainer.className = "conversation-label";
-                    labelContainer.innerHTML = line["label"] + "  ";
-                    lineContainer.appendChild(labelContainer);
-                    var phraseContainer = document.createElement("span");
-                    phraseContainer.className = "conversation-phrase";
-                    phraseContainer.innerHTML = line["phrase"];
-                    lineContainer.appendChild(phraseContainer);
-                    postContentContainer.appendChild(lineContainer);
-                }
-            }
-            else if (post.type === "link") {
-                var link = document.createElement("a");
-                link.href = post["link-url"];
-                link.target = "_blank";
-                link.innerHTML = post["link-text"];
-                postContentContainer.appendChild(link);
-                var description = document.createElement("p");
-                description.className = "link-description";
-                description.innerHTML = post["link-description"];
-                postContentContainer.appendChild(description);
-            }
-            else if (post.type === "photo") {
-                var photoSize = options["photoSize"] | 250;
-                var photoTag = document.createElement("img");
-                photoTag.width = photoSize;
-                photoTag.src = post["photo-url-" + photoSize];
-                var linkTag = document.createElement("a");
-                linkTag.href = post["url-with-slug"] | post["url"];
-                linkTag.appendChild(photoTag);
-                var photoContainer = document.createElement("p");
-                photoContainer.appendChild(photoTag);
-                postContentContainer.appendChild(photoContainer);
-                var photoCaption = document.createElement("p");
-                photoCaption.innerHTML = post["photo-caption"];
-                postContentContainer.appendChild(photoCaption);
-            }
-            else if (post.type === "video") {
-                var videoContainer = document.createElement("p");
-                videoContainer.innerHTML = post["video-player"];
-                postContentContainer.appendChild(videoContainer);
-                postContentContainer.appendChild(post["video-caption"]);
-			}
-			else if (post.type === "audio") {
-                var audioContainer = document.createElement("p");
-                audioContainer.innerHTML = post["audio-player"];
-                postContentContainer.appendChild(audioContainer);
-                postContentContainer.appendChild(post["audio-caption"]);
-            }
-            
-            // Append the post to the container
-            container.appendChild(postContainer);
             
         }
         
         // Append the container to the element
         element.appendChild(container);
+        
+    };
+
+    // Tumblr.post class
+    this.post = function(json) {
+        
+        var post;
+        // Set the prototype to the type of post
+        if (Tumblr.post[json.type]) { post = new Tumblr.post[json.type](json); }
+        else {
+            console.log("Tumblr.post() Exception: Unknown post type encountered:  " + json.type);
+            this.exceptionRaised = true;
+            return null;
+        }
+        return post;
+        
+    };
+    
+    // Tumblr.post.addType(elementFunction) function
+    this.post.addType = function(type, elementFunction) {
+        this[type] = function(json) { Tumblr.utilities.copyJSON(this, json); };
+        this[type].prototype.element = elementFunction;
+    };
+    
+    // Tumblr.post.wrapper(type) function
+    this.post.wrapper = function(type) {
+        var container = document.createElement("article");
+        container.className = type;
+        var contentContainer = document.createElement("section");
+        contentContainer.className = "content";
+        container.appendChild(contentContainer);
+        return {
+            "postContainer" : container,
+            "contentContainer" : contentContainer
+        };
+    };
+    
+    // Tumblr.post.title(title) function
+    this.post.title = function(content) {
+        var title = document.createElement("h1");
+        title.className = "title";
+        title.innerHTML = content;
+        return title;
+    };
+    
+    // Tumblr.post.regular
+    this.post.addType("regular", function() {
+        
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        if (this["regular-title"]) {
+            var title = Tumblr.post.title(this.title);
+            containers["postContainer"].appendChild(title);
+        }
+        
+        containers["contentContainer"].innerHTML += this["regular-body"];
+        
+        return containers["postContainer"];
+        
+    });
+    
+    // Tumblr.post.quote
+    this.post.addType("quote", function() {
+        
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        var textContainer = document.createElement("blockquote");
+        textContainer.innerHTML += this["quote-text"];
+        containers["contentContainer"].appendChild(textContainer);
+        var sourceContainer = document.createElement("p");
+        sourceContainer.className = "quote-source";
+        sourceContainer.innerHTML += this["quote-source"];
+        containers["contentContainer"].appendChild(sourceContainer);
+        
+        return containers["postContainer"];
+        
+    });
+    
+    // Tumblr.post.conversation
+    this.post.addType("conversation", function() {
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        for (var line in this["conversation"]) {
+            line = (this["conversation"])[line];
+            var lineContainer = document.createElement("p");
+            lineContainer.className = "conversation-line";
+            var labelContainer = document.createElement("span");
+            labelContainer.className = "conversation-label";
+            labelContainer.innerHTML = line["label"] + "  ";
+            lineContainer.appendChild(labelContainer);
+            var phraseContainer = document.createElement("span");
+            phraseContainer.className = "conversation-phrase";
+            phraseContainer.innerHTML = line["phrase"];
+            lineContainer.appendChild(phraseContainer);
+            containers["contentContainer"].appendChild(lineContainer);
+        }
+        
+        return containers["postContainer"];
+        
+    });
+    
+    // Tumblr.post.link
+    this.post.addType("link", function() {
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        var link = document.createElement("a");
+        link.href = this["link-url"];
+        link.target = "_blank";
+        link.innerHTML = this["link-text"];
+        containers["contentContainer"].appendChild(link);
+        var description = document.createElement("p");
+        description.className = "link-description";
+        description.innerHTML = this["link-description"];
+        containers["contentContainer"].appendChild(description);
+        
+        return containers["postContainer"];
+    });
+    
+    // Tumblr.post.photo
+    this.post.addType("photo", function() {
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        //var photoSize = options["photoSize"] | 250;
+        var photoSize = 250;
+        var photoTag = document.createElement("img");
+        photoTag.width = photoSize;
+        photoTag.src = this["photo-url-" + photoSize];
+        var linkTag = document.createElement("a");
+        linkTag.href = this["url-with-slug"] | this["url"];
+        linkTag.appendChild(photoTag);
+        var photoContainer = document.createElement("p");
+        photoContainer.appendChild(photoTag);
+        containers["contentContainer"].appendChild(photoContainer);
+        var photoCaption = document.createElement("p");
+        photoCaption.innerHTML = this["photo-caption"];
+        containers["contentContainer"].appendChild(photoCaption);
+        
+        return containers["postContainer"];
+    });
+    
+    // Tumblr.post.video
+    this.post.addType("video", function() {
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        var videoContainer = document.createElement("p");
+        videoContainer.innerHTML = this["video-player"];
+        containers["contentContainer"].appendChild(videoContainer);
+        containers["contentContainer"].innerHTML += this["video-caption"];
+        
+        return containers["postContainer"];
+    });
+    
+    // Tumblr.post.audio
+    this.post.addType("audio", function() {
+        var containers = Tumblr.post.wrapper(this.type);
+        
+        var audioContainer = document.createElement("p");
+        audioContainer.innerHTML = this["audio-player"];
+        containers["contentContainer"].appendChild(audioContainer);
+        containers["contentContainer"].innerHTML += this["audio-caption"];
+        
+        return containers["postContainer"];
+    });
+    
+    // Tumblr.utilities class
+    this.utilities = new function() {};
+    
+    // Tumblr.utilities.copyJSON function
+    this.utilities.copyJSON = function(object, json) {
+        
+         // Copy over all properties from the JSON response
+        for (var propertyName in json) { object[propertyName] = json[propertyName]; }
         
     };
 
