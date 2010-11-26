@@ -8,10 +8,10 @@ Tumblr.post.addType("photo", function() {
     photoTag.width = photoSize;
     photoTag.src = this["photo-url-" + photoSize];
     var linkTag = document.createElement("a");
-    linkTag.href = this["url-with-slug"] | this["url"];
+    linkTag.href = this["photo-link-url"];
     linkTag.appendChild(photoTag);
     var photoContainer = document.createElement("p");
-    photoContainer.appendChild(photoTag);
+    photoContainer.appendChild(linkTag);
     containers["contentContainer"].appendChild(photoContainer);
     var photoCaption = document.createElement("p");
     photoCaption.innerHTML = this["photo-caption"];
