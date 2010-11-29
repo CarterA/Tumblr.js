@@ -1,6 +1,6 @@
 // Tumblr.post.audio
 Tumblr.post.addType("audio", function() {
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     var audioContainer = document.createElement("p");
     audioContainer.innerHTML = this["audio-player"];

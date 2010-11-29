@@ -1,7 +1,7 @@
 // Tumblr.post.regular
 Tumblr.post.addType("regular", function() {
     
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     if (this["regular-title"]) {
         var title = Tumblr.post.title(this.title);

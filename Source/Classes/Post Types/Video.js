@@ -1,6 +1,6 @@
 // Tumblr.post.video
 Tumblr.post.addType("video", function() {
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     var videoContainer = document.createElement("p");
     videoContainer.innerHTML = this["video-player"];

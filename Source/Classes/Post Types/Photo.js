@@ -1,6 +1,6 @@
 // Tumblr.post.photo
 Tumblr.post.addType("photo", function() {
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     //var photoSize = options["photoSize"] | 250;
     var photoSize = 250;

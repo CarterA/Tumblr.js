@@ -19,10 +19,23 @@ Tumblr.post.addType = function(type, elementFunction) {
     this[type].prototype.element = elementFunction;
 };
 
+// Tumblr.post.reblogLink(json)
+Tumblr.post.reblogLink = function(json) {
+    var reblogLink = document.createElement("a");
+    reblogLink.href = "http://tumblr.com/reblog/" + json["id"] + "/" + json["reblog-key"];
+    reblogLink.target = "_blank";
+    reblogLink.innerHTML = "Reblog";
+    var reblogContainer = document.createElement("span");
+    reblogContainer.className = "reblog";
+    reblogContainer.appendChild(reblogLink);
+    return reblogContainer;
+};
+
 // Tumblr.post.wrapper(type) function
-Tumblr.post.wrapper = function(type) {
+Tumblr.post.wrapper = function(json) {
     var container = document.createElement("article");
-    container.className = type;
+    container.className = json.type;
+    container.appendChild(this.reblogLink(json));
     var contentContainer = document.createElement("section");
     contentContainer.className = "content";
     container.appendChild(contentContainer);

@@ -1,7 +1,7 @@
 // Tumblr.post.quote
 Tumblr.post.addType("quote", function() {
     
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     var textContainer = document.createElement("blockquote");
     textContainer.innerHTML += this["quote-text"];

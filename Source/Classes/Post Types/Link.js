@@ -1,6 +1,6 @@
 // Tumblr.post.link
 Tumblr.post.addType("link", function() {
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     var link = document.createElement("a");
     link.href = this["link-url"];

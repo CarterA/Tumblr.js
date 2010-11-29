@@ -1,6 +1,6 @@
 // Tumblr.post.conversation
 Tumblr.post.addType("conversation", function() {
-    var containers = Tumblr.post.wrapper(this.type);
+    var containers = Tumblr.post.wrapper(this);
     
     for (var line in this["conversation"]) {
         line = (this["conversation"])[line];
